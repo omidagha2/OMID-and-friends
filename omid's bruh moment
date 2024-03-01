@@ -1,0 +1,179 @@
+#include <iostream>
+#include <vector>
+#include <string>
+
+class Building
+{
+private:
+    std::string address;
+    int postal_code;
+
+public:
+    void setAddress(const std::string &i_address) { address = i_address; }
+    std::string getAddress() const { return address; }
+    void setpostal_code(int i_postal_code) { postal_code = i_postal_code; }
+    int getpostal_code() const { return postal_code; }
+};
+
+class Store : public Building
+{
+private:
+    Salesperson *owner;
+    double rental_fee;
+
+public:
+    void setOwner(Salesperson *i_origin_countrySP_PTR) { owner = i_origin_countrySP_PTR; }
+    Salesperson *getOwner() const { return owner; }
+    void setrental_fee(double i_price) { rental_fee = i_price; }
+    double getrental_fee() const { return rental_fee; }
+};
+
+class Grocery : public Store
+{
+private:
+    std::vector<Fruit *> fruits;
+
+public:
+    std::vector<Fruit *> getFruits() const { return fruits; }
+
+    void addFruit(Fruit *pointer) { fruits.push_back(pointer); }
+
+    Fruit *buyFruit(const Fruit &i_fruit_obj)
+    {
+        for (Fruit *fruit : fruits)
+        {
+            if (*fruit == i_fruit_obj)
+            {
+                return fruit;
+            }
+        }
+        return nullptr;
+    }
+
+    void operator+=(Fruit *pointer) { fruits.push_back(pointer); }
+};
+
+class Grocer : public Salesperson
+{
+public:
+    Grocer(const std::string &i_name, int i_age, const std::string &i_job)
+        : Salesperson(i_name, i_age, i_job) {}
+
+    void serveCustomer(const Person &i_customer) final
+    {
+        std::cout << "Hello, " << i_customer.getName() << "! What fruit do you want to buy?" << std::endl;
+    }
+};
+
+class Fruit
+{
+protected:
+    std::string name;
+    int price;
+    double calories;
+    float weight;
+
+public:
+    Fruit(const std::string &i_name, int i_price, double i_calories, float i_weight)
+        : name(i_name), price(i_price), calories(i_calories), weight(i_weight) {}
+
+    Fruit(const std::string &i_name) : name(i_name) {}
+
+    std::string getName() const { return name; }
+    int getPrice() const { return price; }
+    double getCalories() const { return calories; }
+    float getWeight() const { return weight; }
+
+    bool operator==(const Fruit &i_fruit_obj) const
+    {
+        return (this->name == i_fruit_obj.getName());
+    }
+};
+
+class SliceableFruit : public Fruit
+{
+public:
+    SliceableFruit(const std::string &i_name, int i_price, double i_calories, float i_weight)
+        : Fruit(i_name, i_price, i_calories, i_weight) {}
+
+    virtual SliceableFruit *slice(int n) = 0;
+};
+
+class Apple : public SliceableFruit
+{
+private:
+    std::string color;
+
+public:
+    Apple(const std::string &i_name, int i_price, double i_calories, float i_weight, const std::string &i_color)
+        : SliceableFruit(i_name, i_price, i_calories, i_weight), color(i_color) {}
+
+    std::string getColor() const { return color; }
+
+    SliceableFruit *slice(int n) override
+    {
+        std::vector<Apple *> arr;
+        for (int i = 0; i < n; i++)
+        {
+            arr.push_back(new Apple(name, price / n, calories / n, weight / n, color));
+        }
+        return arr[0];
+    }
+};
+
+class PeelableFruit : public Fruit
+{
+public:
+    bool isPeeled;
+    PeelableFruit(const std::string &i_name, int i_price, double i_calories, float i_weight)
+        : Fruit(i_name, i_price, i_calories, i_weight) {}
+
+    virtual void peel() = 0;
+};
+
+class Banana : public PeelableFruit
+{
+private:
+    std::string originCountry;
+
+public:
+    Banana(const std::string &i_name, int i_price, double i_calories, float i_weight, const std::string &i_origin_countryOC)
+        : PeelableFruit(i_name, i_price, i_calories, i_weight), originCountry(i_origin_countryOC) {}
+
+    std::string getOriginCountry() const { return originCountry; }
+
+    void peel() override
+    {
+        isPeeled = true;
+    }
+};
+
+class Person
+{
+private:
+    std::string name;
+    int age;
+
+public:
+    Person(const std::string &i_name, int i_age) : name(i_name), age(i_age) {}
+
+    void setName(const std::string &i_name) { name = i_name; }
+    std::string getName() const { return name; }
+    void setAge(int i_age) { age = i_age; }
+    int getAge() const { return age; }
+};
+
+class Salesperson : public Person
+{
+protected:
+    std::string job;
+
+public:
+    Salesperson(const std::string &i_name, int i_age, const std::string &i_job)
+        : Person(i_name, i_age), job(i_job) {}
+
+    virtual void serveCustomer(const Person &i_customer)
+    {
+        std::cout << "Hello, " << i_customer.getName() << "! What can I do for you?" << std::endl;
+    }
+};
